@@ -19,7 +19,7 @@ org.apache.ibatis.logging.stdout
 2.异常
 org.apache.ibatis.exceptions
 
-3.缓存
+3.缓存  装饰器模式  
 org.apache.ibatis.cache
 org.apache.ibatis.cache.decorators
 org.apache.ibatis.cache.impl
@@ -46,7 +46,7 @@ org.apache.ibatis.reflection.property
 org.apache.ibatis.reflection.wrapper
 可以参考MetaObjectTest来跟踪调试，基本上用到了reflection包下所有的类
 
-8.数据源
+8.数据源 工厂模式  
 org.apache.ibatis.datasource
 org.apache.ibatis.datasource.jndi
 org.apache.ibatis.datasource.pooled
