@@ -32,7 +32,22 @@ import javax.sql.DataSource;
 import org.apache.ibatis.io.Resources;
 
 /**
- * 没有池化的数据源
+ * 没有池化的数据源。
+ *UNPOOLED– 这个数据源的实现只是每次被请求时打开和关闭连接。虽然有点慢，但对于在数据库连接可用性方面没有太高要求的简单应用程序来说，是一个很好的选择。
+ * 不同的数据库在性能方面的表现也是不一样的，对于某些数据库来说，使用连接池并不重要，这个配置就很适合这种情形。
+ *
+ * UNPOOLED 类型的数据源仅仅需要配置以下 5 种属性：
+ *    driver – 这是 JDBC 驱动的 Java 类的完全限定名（并不是 JDBC 驱动中可能包含的数据源类）。
+ *    url – 这是数据库的 JDBC URL 地址。
+ *    username – 登录数据库的用户名。
+ *    password – 登录数据库的密码。
+ *    defaultTransactionIsolationLevel – 默认的连接事务隔离级别。
+ *
+ *    作为可选项，你也可以传递属性给数据库驱动。要这样做，属性的前缀为“driver.”，例如：
+ *    driver.encoding=UTF8
+ *    这将通过 DriverManager.getConnection(url,driverProperties) 方法传递值为 UTF8 的 encoding 属性给数据库驱动。
+ *
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
@@ -45,12 +60,14 @@ public class UnpooledDataSource implements DataSource {
 
   /**
    * 数据库连接的相关配置
-   * 作为可选项,你可以传递数据库驱动的属性。要这样做,属性的前缀是以“driver.”开 头的,例如 driver.encoding=UTF8
+   * 作为可选项,你可以传递数据库驱动的属性。要这样做,属性的前缀是以“driver.”开头的,例如 driver.encoding=UTF8
    */
   private Properties driverProperties;
 
   /**
    * 缓存已注册的数据库驱动类
+   * key： Driver的全限定类名
+   * value：Driver对象
    */
   private static Map<String, Driver> registeredDrivers = new ConcurrentHashMap<String, Driver>();
 
@@ -217,6 +234,7 @@ public class UnpooledDataSource implements DataSource {
   }
 
   private Connection doGetConnection(Properties properties) throws SQLException {
+    //驱动相关
     initializeDriver();
     //属性的前缀是以“driver.”开 头的,它是通过 DriverManager.getConnection(url,driverProperties)方法传递给数据库驱动
     Connection connection = DriverManager.getConnection(url, properties);
@@ -227,9 +245,9 @@ public class UnpooledDataSource implements DataSource {
   }
 
   private synchronized void initializeDriver() throws SQLException {
-	  //这里便是大家熟悉的初学JDBC时的那几句话了 Class.forName newInstance()
+    //判断 registeredDrivers 是否已经存在该 driver ，若不存在，进行初始化
     if (!registeredDrivers.containsKey(driver)) {
-      // 缓存中没有该驱动，则手动加载，并存入缓存中
+      //缓存中没有该驱动，则手动加载，并存入缓存中
       Class<?> driverType;
       try {
         if (driverClassLoader != null) {
@@ -237,10 +255,16 @@ public class UnpooledDataSource implements DataSource {
         } else {
           driverType = Resources.classForName(driver);
         }
+
+        //创建 Driver 对象
         // DriverManager requires the driver to be loaded via the system ClassLoader.
         // http://www.kfu.com/~nsayer/Java/dyn-jdbc.html
         Driver driverInstance = (Driver)driverType.newInstance();
+
+        //创建 DriverProxy 对象，并注册到 DriverManager 中
         DriverManager.registerDriver(new DriverProxy(driverInstance));
+
+        //添加到 registeredDrivers 中
         registeredDrivers.put(driver, driverInstance);
       } catch (Exception e) {
         throw new SQLException("Error setting driver on UnpooledDataSource. Cause: " + e);

@@ -15,7 +15,7 @@
  */
 
 /**
- * Base package for Datasources
+ * Base package for Datasource
  */
 package org.apache.ibatis.datasource;
 
@@ -32,12 +32,9 @@ package org.apache.ibatis.datasource;
     具体产品类（ConcreteProduct）：实现产品接口的实现类，具体产品类中定义了具体的业务逻辑；
 
 
- PooledConnection：使用动态代理封装了真正的数据库连接对象；
- PoolState：用于管理PooledConnection对象状态的组件，通过两个list分别 管理空闲状态的连接资源和活跃状态的连接资源
- PooledDataSource：一个简单，同步的、线程安全的数据库连接池
-
-
-
+    PooledConnection：使用动态代理封装了真正的数据库连接对象；
+    PoolState：用于管理PooledConnection对象状态的组件，通过两个list分别 管理空闲状态的连接资源和活跃状态的连接资源
+    PooledDataSource：一个简单，同步的、线程安全的数据库连接池
 
 
  */
